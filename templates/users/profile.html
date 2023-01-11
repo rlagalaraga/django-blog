@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{profile.first_name}}'s Profile{% endblock title %}
+{% block content %}
+    {% comment %} <div>
+        <h1>{{profile.first_name}}'s Profile</h1>
+        <p>Picture:</p><img src="{{profile.avatar.url}}"></img>
+        <p>First Name: {{ profile.first_name }}</p>
+        <p>Last Name: {{ profile.last_name}}</p>
+        <p>Bio: {{ profile.bio }}</p>
+        
+        <a href="{% url 'users:modifyProfile' %}">Update Profile</a>
+    </div> {% endcomment %}
+
+
+<section class="h-100 gradient-custom-2">
+    <div class="container py-5 h-100">
+      <div class="row d-flex justify-content-center align-items-center h-100">
+        <div class="col col-lg-9 col-xl-7">
+          <div class="card">
+            <div class="rounded-top text-white d-flex flex-row" style="background-color: #4d94ff; height:200px;">
+              <div class="ms-4 mt-5 d-flex flex-column" style="width: 150px;">
+                <img src="{{profile.avatar.url}}"
+                  class="img-fluid img-thumbnail mt-4 mb-2"
+                  style="width: 150px; z-index: 1">
+                  <br>
+                <a href="{% url 'users:modifyProfile' %}"class="btn btn-outline-dark" data-mdb-ripple-color="dark"
+                  style="z-index: 1;">
+                  Edit profile
+                </a>
+              </div>
+              <div class="ms-3" style="margin-top: 130px;">
+                <h5>{{profile.first_name}} {{ profile.last_name}}</h5>
+                <p>{{ profile.user }}</p>
+              </div>
+            </div>
+            <div class="p-4 text-black" style="background-color: #f8f9fa;">
+              <div class="d-flex justify-content-end text-center py-1">
+                <div>
+
+                </div>
+                <div class="px-3">
+
+                </div>
+                <div>
+
+                </div>
+              </div>
+            </div>
+            <div class="card-body p-4 text-black">
+              <div class="mb-5">
+                <p class="lead fw-normal mb-1">About</p>
+                <div class="p-4" style="background-color: #f8f9fa;">
+                  <p class="font-italic mb-1">{{ profile.bio }}</p>
+                </div>
+              </div>
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <p class="lead fw-normal mb-0">Blogs</p>
+              </div>
+              <div class="row g-2">
+                <div class="col mb-2">
+                    {% for post in posts %}
+                    <div class="post block">
+                        <h2 class="subtitle">{{post.title}}</h2>
+            
+                        <small>Posted by {{post.authorEmail}} at {{ post.date_added }}</small>
+            
+                        <p>{{post.intro}}</p>
+                        <a href="{% url 'blogs:postDetail' post.id %}">Read More</a>
+                    </div>
+                {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {% endblock content %}
