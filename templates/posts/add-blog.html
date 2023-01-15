@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Create Post</h1>
+<form action="{% url 'posts:add-blog' %}" method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" id="submit">Create Post</button>
+</form>
+{% for msg in messages %}
+<div class="alert alert-danger" role="alert">
+    {{ msg }}
+  </div>
+  {% endfor %}
+{% endblock %}

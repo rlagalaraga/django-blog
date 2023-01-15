@@ -20,9 +20,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(max_length=80, null=True, blank=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    avatar = models.ImageField(upload_to='profile', default='/default/img.jpg')
+    avatar = models.ImageField(blank=True, null=True, upload_to='profile_images', default='defaultAvatar.png')
     date_joined = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
+    following = models.ManyToManyField("self", related_name="followers", symmetrical=False)
 
     USERNAME_FIELD = "email"
     objects = UserManager()

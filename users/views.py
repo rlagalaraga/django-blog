@@ -1,12 +1,12 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render, redirect
-from django.urls import reverse
 from django.views.generic import TemplateView
-from .forms import LoginForm, RegisterForm
+from .forms import LoginForm, RegisterForm, UpdateUserForm
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from .models import User
+from posts.models import Post
 
 # Create your views here.
 class IndexView(TemplateView):
@@ -33,10 +33,12 @@ class RegisterView(TemplateView):
             password = request.POST['password2']
             
             user = authenticate(request, email=email, password=password)
-            return redirect('users:index')
+            messages.success(request, 'Your account is now registered try logging in.')
+            return redirect('posts:dashboard')
         
         else:
             form = RegisterForm(request.POST)
+            messages.error(request, 'Invalid Input!')
             return render(request, 'users/register.html', {'form': form})
 
 class LoginView(TemplateView):
@@ -62,26 +64,67 @@ class LoginView(TemplateView):
 
             if user is not None:
                 login(request, user)
-                messages.success(request, 'Successfuly Logged In!')
-                return HttpResponseRedirect(reverse_lazy('users:index'))
+                messages.success(request, 'Successfully Logged In!')
+                return HttpResponseRedirect(reverse_lazy('posts:dashboard'))
             else:
                 form = LoginForm(request.POST)
+                messages.error(request, 'Please enter correct Email and Password!')
                 return render(request, 'users/login.html', {'form' : form})
         
         else:
+            messages.error(request, 'Please enter correct Email and Password!')
             return render(request, 'users/login.html', {'form': form})
+
 
 class ProfileView(TemplateView):
     template_name='users/profile.html'
 
     #gets posts of user logged in and profile details of user
-    def get(self, request):
-        profile = User.objects.get(id=request.user.id)
+    def get(self, request, id):
+        posts = Post.objects.filter(author=id)
+        profile = get_object_or_404(User, id=id)
+        isFollowed = False
+        if profile.following.filter(id = request.user.id).exists():
+            isFollowed = True
         context = {
-            'profile' : profile
+            'posts' : posts,
+            'profile' : profile,
+            'isFollowed': isFollowed
         }
         return render(request, self.template_name, context)
+    
+def followToggle(request, id):
+    user = get_object_or_404(User, id=request.POST.get('user_id'))
+    if user.following.filter(id = request.user.id).exists():
+        user.following.remove(request.user)
+    else:
+        user.following.add(request.user)
+    return HttpResponseRedirect(reverse('users:profile', args=[id]))
 
 def LogoutView(request):
     logout(request)
-    return redirect('users:index')
+    messages.success(request, 'Account Logged Out!')
+    return redirect('posts:dashboard')
+
+class ModifyProfileView(TemplateView):
+    template_name='users/modifyProfile.html'
+
+    def get(self, request):
+        form = UpdateUserForm()
+        return render(request, 'users/modifyProfile.html', {'form' : form})
+    
+    def post(self, request):
+        #get profile of user currently logged in
+        profileUser = User.objects.get(id=request.user.id)
+        profile_form = UpdateUserForm(request.POST, request.FILES, instance=profileUser)
+
+        if profile_form.is_valid():
+            profile_form.save()
+            messages.success(request, 'Profile has been updated successfully!')
+            return redirect('users:profile')
+
+        else:
+            form = UpdateUserForm()
+            messages.error(request, 'Invalid Input!')
+            return render(request, 'users/modifyProfile.html', {'form' : form})
+

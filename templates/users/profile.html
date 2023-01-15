@@ -2,15 +2,6 @@
 {% load static %}
 {% block title %}{{profile.first_name}}'s Profile{% endblock title %}
 {% block content %}
-    {% comment %} <div>
-        <h1>{{profile.first_name}}'s Profile</h1>
-        <p>Picture:</p><img src="{{profile.avatar.url}}"></img>
-        <p>First Name: {{ profile.first_name }}</p>
-        <p>Last Name: {{ profile.last_name}}</p>
-        <p>Bio: {{ profile.bio }}</p>
-        
-        <a href="{% url 'users:modifyProfile' %}">Update Profile</a>
-    </div> {% endcomment %}
 
 
 <section class="h-100 gradient-custom-2">
@@ -22,22 +13,39 @@
               <div class="ms-4 mt-5 d-flex flex-column" style="width: 150px;">
                 <img src="{{profile.avatar.url}}"
                   class="img-fluid img-thumbnail mt-4 mb-2"
-                  style="width: 150px; z-index: 1">
+                  style="max-height:120px;width:130px;">
                   <br>
-                <a href="{% url 'users:modifyProfile' %}"class="btn btn-outline-dark" data-mdb-ripple-color="dark"
-                  style="z-index: 1;">
-                  Edit profile
-                </a>
+                
               </div>
               <div class="ms-3" style="margin-top: 130px;">
                 <h5>{{profile.first_name}} {{ profile.last_name}}</h5>
-                <p>{{ profile.user }}</p>
+                <p>Followers: {{ profile.following.count }} | Following: {{ profile.followers.count }}</p>
               </div>
             </div>
             <div class="p-4 text-black" style="background-color: #f8f9fa;">
               <div class="d-flex justify-content-end text-center py-1">
                 <div>
-
+                  {% if user.is_authenticated and user == profile%}
+                <a href="{% url 'users:modifyProfile' %}"class="btn btn-outline-dark" data-mdb-ripple-color="dark"
+                  style="z-index: 1;">
+                  Edit profile
+                </a>
+                {% elif user.is_authenticated %}
+                <form action="{% url 'users:followToggle' profile.id %}" method='POST'>
+                  {% csrf_token %}
+                  {% if isFollowed %}
+                      <button type='submit' class="btn btn-outline-dark" style="z-index: 1;" data-mdb-ripple-color="dark", name='user_id', value='{{profile.id}}',
+                      class ="btn btn-danger btn-sm">Unfollow</button>
+                  {% else %}
+                      <button type='submit' class="btn btn-outline-dark" style="z-index: 1;" data-mdb-ripple-color="dark", name='user_id', value='{{profile.id}}',
+                      class ="btn btn-primary btn-sm">Follow</button>
+                  {% endif %}
+                {% else %}
+                <a href="{% url 'users:login' %}"class="btn btn-outline-dark" data-mdb-ripple-color="dark"
+                  style="z-index: 1;">
+                  Login
+                </a>
+                {% endif %}
                 </div>
                 <div class="px-3">
 
@@ -48,12 +56,6 @@
               </div>
             </div>
             <div class="card-body p-4 text-black">
-              <div class="mb-5">
-                <p class="lead fw-normal mb-1">About</p>
-                <div class="p-4" style="background-color: #f8f9fa;">
-                  <p class="font-italic mb-1">{{ profile.bio }}</p>
-                </div>
-              </div>
               <div class="d-flex justify-content-between align-items-center mb-4">
                 <p class="lead fw-normal mb-0">Blogs</p>
               </div>
@@ -63,19 +65,55 @@
                     <div class="post block">
                         <h2 class="subtitle">{{post.title}}</h2>
             
-                        <small>Posted by {{post.authorEmail}} at {{ post.date_added }}</small>
+                        <small>Posted by {{post.author}} at {{ post.date_created }}</small>
             
                         <p>{{post.intro}}</p>
-                        <a href="{% url 'blogs:postDetail' post.id %}">Read More</a>
+                        <a href="{% url 'posts:postDetail' post.id %}">Read More</a>
                     </div>
                 {% endfor %}
                 </div>
               </div>
             </div>
+
+            <div class="card-body p-4 text-black">
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <p class="lead fw-normal mb-0">Followers</p>
+              </div>
+              <div class="row g-2">
+                <div class="col mb-2">
+                    {% for p in profile.following.all %}
+                    <div class="post block">
+                        <a href="{% url 'users:profile' p.id %}">{{p.email}}</a>
+                    </div>
+                {% endfor %}
+                </div>
+              </div>
+            </div>
+            <div class="card-body p-4 text-black">
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <p class="lead fw-normal mb-0">Following</p>
+              </div>
+              <div class="row g-2">
+                <div class="col mb-2">
+                    {% for p in profile.followers.all %}
+                    <div class="post block">
+                        <a href="{% url 'users:profile' p.id %}">{{p.email}}</a>
+                    </div>
+                {% endfor %}
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
     </div>
   </section>
+  <br>
+  {% for msg in messages %}
+<div class="alert alert-success" role="alert">
+    {{ msg }}
+  </div>
+{% endfor %}
 
   {% endblock content %}

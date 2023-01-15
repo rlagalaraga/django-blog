@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% for msg in messages %}
+        {% if "update" in msg.tags %}
+            <div class="alert alert-success" role="alert">
+                {{ msg }}
+            </div>
+        {% elif "invalid_comment" in msg.tags %}
+            <div class="alert alert-danger" role="alert">
+                {{ msg }}
+            </div>
+        {% endif %}
+    {% endfor %}
+
+    <div class ="text-center">
+    <img src="{{post.picture.url}}" class="img-fluid"></img>
+    </div>
+    <h1 class="title">{{post.title}}</h1>
+    {% for profile in profile_list %}
+        {% if profile == post.author %}
+        <small>Posted by <a href="{% url 'users:profile' profile.id%}">{{profile.first_name}} {{profile.last_name}}</a> at {{ post.date_created }}</small>
+        {% endif %}
+    {% endfor %}
+
+    <p>{{ post.content }}</p>
+    <hr>
+
+    <h2 class="subtitle">Comments</h2>
+    {% for comment in post.comments.all %}
+            <article class="media">
+                <div class="media-content">
+                    <div class="content">
+                        <p>
+                            <strong>{{ comment.author }}</strong> <small>{{ comment.date_added }}</small>
+                            <br>
+                            {{ comment.content }}
+                        </p>
+                    </div>
+                </div>
+            </article>
+        {% empty %}
+            <div class="notification">
+                <p>No comments yet!</p>
+            </div>
+        {% endfor %}
+    
+{% if user.is_authenticated and user == post.author%}
+    <a class="btn btn-primary" href="{% url 'posts:postEdit' post.id  %}">Edit Post</a>
+    <a class="btn btn-danger" href="{% url 'posts:postDelete' post.id  %}">Delete Post</a>
+    <p>Commenting as <strong>{{user}}</strong></p>
+    <h3 class="subtitle">Add comment</h3>
+        <form method="post" action="." novalidate>
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="field">
+                <div class="control">
+                    <button class="button is-success">Submit</button>
+                </div>
+            </div>
+        </form>
+        <form action="{% url 'posts:like_post' post.id %}" method='POST'>
+            {% csrf_token %}
+            {% if isLiked %}
+                <button type='submit', name='post_id', value='{{post.id}}',
+                class ="btn btn-danger btn-sm">Unlike</button>
+            {% else %}
+                <button type='submit', name='post_id', value='{{post.id}}',
+                class ="btn btn-primary btn-sm">Like</button>
+            {% endif %}
+{% elif user.is_authenticated %}
+    <p>Commenting as <strong>{{user}}</strong></p>
+    <h3 class="subtitle">Add comment</h3>
+        <form method="post" action="." novalidate>
+            {% csrf_token %}
+            {{ form.as_p }}
+
+            <div class="field">
+                <div class="control">
+                    <button class="button is-success">Submit</button>
+                </div>
+            </div>
+        </form>
+    <br>
+        <form action="{% url 'posts:like_post' post.id %}" method='POST'>
+            {% csrf_token %}
+            {% if isLiked %}
+                <button type='submit', name='post_id', value='{{post.id}}',
+                class ="btn btn-danger btn-sm">Unlike</button>
+            {% else %}
+                <button type='submit', name='post_id', value='{{post.id}}',
+                class ="btn btn-primary btn-sm">Like</button>
+            {% endif %}
+            - {{ totalLikes }} Likes
+{% else %}
+    <p>You are not logged in. You must log in to comment, like and modify own posts.</p>
+    <a href="{% url 'users:login' %}">Log In</a>
+{% endif %}
+{% endblock %}

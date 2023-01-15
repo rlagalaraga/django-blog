@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+<h1>Create Post</h1>
+{% block content %}
+<h3>Delete: {{ post.title }} </h3>
+<strong>Confirm to delete this post?</strong>
+<div class="form-group">
+    <form action="{% url 'posts:postDelete' %}" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="btn btn-secondary">Delete Post</button>
+    </form>
+</div>
+{% endblock %}

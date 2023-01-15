@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<header class="py-5 bg-light border-bottom mb-4">
+    <div class="container">
+        <div class="text-center my-5">
+            <h4>Django-blogs</h4>
+            {% if user.is_authenticated %}
+            <p>Have an Idea for a blog? <a href="{% url 'posts:add-blog' %}">Post it!</a>
+            {% else %}
+            <p>You are not logged in. You must log in to create a blog post.</p>
+            <a href="{% url 'users:login' %}">Log In</a>
+            {% endif %}
+        </div>
+    </div>
+</header>
+
+{% for msg in messages %}
+{% if user.is_authenticated %}
+<div class="alert alert-success" role="alert">
+    {{ msg }}
+  </div>
+  {% else %}
+<div class="alert alert-info" role="alert">
+    {{ msg }}
+  </div>
+{% endif %}
+
+  {% endfor %}
+
+<div class="row">
+    {% for post in posts %}
+    <div class="col-4 py-3">
+        <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">{{post.title}}</h5>
+            {% for user in profile_list %}
+                {% if user == post.author %}
+                <small>Posted by <a href="{% url 'users:profile' user.id%}"> <strong>{{user.first_name}} {{user.last_name}}</strong> </a> at {{ post.date_created }}</small>
+                {% endif %}
+            {% endfor %}
+            <p class="card-text">{{post.intro}}</p>
+            <img src="{{post.picture.url}}" class="img-fluid"></img>
+        </div>
+        <div class="card-footer">
+            <a class="btn btn-primary" href="{% url 'posts:postDetail' post.id %}" role="button">Read More</a>
+        </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

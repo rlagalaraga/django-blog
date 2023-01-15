@@ -3,11 +3,15 @@
 
 {% block content %}
 <h1>Login</h1>
-<form action="{% url 'users:login' %}" method="post">
+<form action="{% url 'users:login' %}" method="post" novalidate>
     {% csrf_token %}
     {{ form.as_p }}
     <button type="submit" id="submit">Login</button>
 </form>
 <br>
-{% comment %}<a href="{% url 'users:password_reset' %}">Forgot Password?</a>{% endcomment %}
+{% for msg in messages %}
+<div class="alert alert-danger" role="alert">
+    {{ msg }}
+</div>
+{% endfor %}
 {% endblock %}
